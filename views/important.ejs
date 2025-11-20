@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TaskTrackr - My Day</title>
+  <title>TaskTrackr - Important</title>
 
   <!-- Bootstrap CSS -->
   <link
@@ -28,10 +28,10 @@
         <div class="p-3">
           <h5 class="mb-3">Views</h5>
           <ul class="list-group mb-4">
-            <a href="/" class="list-group-item list-group-item-action active">
+            <a href="/" class="list-group-item list-group-item-action">
               My Day
             </a>
-            <a href="/important" class="list-group-item list-group-item-action">
+            <a href="/important" class="list-group-item list-group-item-action active">
               Important
             </a>
             <a href="/planned" class="list-group-item list-group-item-action">
@@ -66,36 +66,23 @@
         </div>
       </aside>
 
-      <!-- MAIN CONTENT: MY DAY -->
+      <!-- MAIN CONTENT: IMPORTANT TASKS -->
       <section class="col-12 col-md-9 col-lg-10 p-4">
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
           <div>
-            <h2 class="mb-1">My Day</h2>
+            <h2 class="mb-1">Important</h2>
             <p class="text-muted mb-0">
-              <%= currentDate.toDateString() %>
+              All tasks marked as ⭐ important
             </p>
           </div>
-
-          <div class="btn-group mt-2 mt-md-0" role="group">
-            <a href="/?date=<%= prevDateStr %>" class="btn btn-outline-secondary">
-              &laquo; Previous day
-            </a>
-            <a href="/?date=<%= currentDateStr %>" class="btn btn-outline-secondary">
-              Today
-            </a>
-            <a href="/?date=<%= nextDateStr %>" class="btn btn-outline-secondary">
-              Next day &raquo;
-            </a>
+          <div class="mt-2 mt-md-0">
+            <a href="/todos/new" class="btn btn-success">+ Add Task</a>
           </div>
-        </div>
-
-        <div class="mb-3">
-          <a href="/todos/new" class="btn btn-success">+ Add Task</a>
         </div>
 
         <div class="card">
           <div class="card-header">
-            Tasks due on <strong><%= currentDate.toDateString() %></strong>
+            Important Tasks
           </div>
           <div class="card-body p-0">
             <table class="table mb-0 table-hover align-middle">
@@ -103,33 +90,27 @@
                 <tr>
                   <th>Title</th>
                   <th>List</th>
+                  <th>Due Date</th>
                   <th>Priority</th>
                   <th>Status</th>
-                  <th>Important</th>
                   <th style="width: 180px;">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <% if (!todosToday || todosToday.length === 0) { %>
+                <% if (!importantTodos || importantTodos.length === 0) { %>
                   <tr>
                     <td colspan="6" class="text-center text-muted py-4">
-                      No tasks due on this day.
+                      No important tasks yet. Mark a task as important to see it here.
                     </td>
                   </tr>
                 <% } else { %>
-                  <% todosToday.forEach(todo => { %>
+                  <% importantTodos.forEach(todo => { %>
                     <tr class="<%= todo.completed ? 'table-success' : '' %>">
-                      <td><%= todo.title %></td>
+                      <td>⭐ <%= todo.title %></td>
                       <td><%= todo.list ? todo.list.name : '-' %></td>
+                      <td><%= todo.dueDate ? todo.dueDate.toDateString() : '-' %></td>
                       <td><%= todo.priority %></td>
                       <td><%= todo.completed ? 'Done' : 'Pending' %></td>
-                      <td>
-                        <% if (todo.important) { %>
-                          ⭐
-                        <% } else { %>
-                          -
-                        <% } %>
-                      </td>
                       <td>
                         <a href="/todos/<%= todo._id %>/edit" class="btn btn-sm btn-primary">Edit</a>
                         <a href="/todos/<%= todo._id %>/delete" class="btn btn-sm btn-outline-danger">Delete</a>

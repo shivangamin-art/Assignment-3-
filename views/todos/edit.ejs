@@ -17,6 +17,7 @@
     <div class="container">
       <a class="navbar-brand" href="/">TaskTrackr</a>
       <a class="nav-link text-light" href="/todos">My Tasks</a>
+      <a class="nav-link text-light" href="/lists">Lists</a>
     </div>
   </nav>
 
@@ -63,7 +64,24 @@
         </select>
       </div>
 
-      <div class="col-md-4 d-flex align-items-center">
+      <div class="col-md-4">
+        <label class="form-label">List</label>
+        <select name="list" class="form-select">
+          <option value="">No list</option>
+          <% if (lists && lists.length) { %>
+            <% lists.forEach(list => { %>
+              <option
+                value="<%= list._id %>"
+                <%= todo.list && todo.list.toString() === list._id.toString() ? 'selected' : '' %>
+              >
+                <%= list.name %>
+              </option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
+
+      <div class="col-md-4">
         <div class="form-check mt-4">
           <input
             class="form-check-input"
@@ -74,6 +92,21 @@
           >
           <label class="form-check-label" for="completed">
             Completed
+          </label>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="form-check mt-4">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            name="important"
+            id="important"
+            <%= todo.important ? 'checked' : '' %>
+          >
+          <label class="form-check-label" for="important">
+            Mark as important
           </label>
         </div>
       </div>

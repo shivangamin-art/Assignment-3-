@@ -1,13 +1,18 @@
+// routes/todoRoutes.js
 // Handles all CRUD routes for tasks
 
 const express = require('express');
 const router = express.Router();
 const Todo = require('../models/Todo');
+const List = require('../models/List');
 
 // READ: list all tasks
 router.get('/', async (req, res) => {
   try {
-    const todos = await Todo.find().sort({ completed: 1, dueDate: 1 });
+    const todos = await Todo.find()
+      .populate('list')
+      .sort({ completed: 1, dueDate: 1 });
+
     res.render('todos/list', { todos });
   } catch (err) {
     console.error(err);
@@ -16,15 +21,30 @@ router.get('/', async (req, res) => {
 });
 
 // CREATE: show new task form
-router.get('/new', (req, res) => {
-  res.render('todos/new');
+router.get('/new', async (req, res) => {
+  try {
+    const lists = await List.find().sort({ name: 1 });
+    res.render('todos/new', { lists });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
 });
 
 // CREATE: handle form submit
 router.post('/', async (req, res) => {
   try {
-    const { title, description, dueDate, priority } = req.body;
-    await Todo.create({ title, description, dueDate, priority });
+    const { title, description, dueDate, priority, list, important } = req.body;
+
+    await Todo.create({
+      title,
+      description,
+      dueDate,
+      priority,
+      important: important === 'on',
+      list: list || null
+    });
+
     res.redirect('/todos');
   } catch (err) {
     console.error(err);
@@ -37,7 +57,10 @@ router.get('/:id/edit', async (req, res) => {
   try {
     const todo = await Todo.findById(req.params.id);
     if (!todo) return res.status(404).send('Task not found');
-    res.render('todos/edit', { todo });
+
+    const lists = await List.find().sort({ name: 1 });
+
+    res.render('todos/edit', { todo, lists });
   } catch (err) {
     console.error(err);
     res.status(500).send('Server Error');
@@ -47,14 +70,18 @@ router.get('/:id/edit', async (req, res) => {
 // UPDATE: handle edit form
 router.put('/:id', async (req, res) => {
   try {
-    const { title, description, dueDate, priority, completed } = req.body;
+    const { title, description, dueDate, priority, list, completed, important } = req.body;
+
     await Todo.findByIdAndUpdate(req.params.id, {
       title,
       description,
       dueDate,
       priority,
-      completed: completed === 'on'
+      completed: completed === 'on',
+      important: important === 'on',
+      list: list || null
     });
+
     res.redirect('/todos');
   } catch (err) {
     console.error(err);

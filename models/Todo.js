@@ -24,6 +24,15 @@ const todoSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  important: {
+    type: Boolean,
+    default: false
+  },
+  list: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'List',
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now
