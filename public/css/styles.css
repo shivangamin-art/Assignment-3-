@@ -1,0 +1,20 @@
+body {
+  background: #f5f7fb;
+}
+
+h1, h2 {
+  font-weight: 700;
+}
+
+.table-hover tbody tr:hover {
+  transform: scale(1.01);
+  transition: transform 0.1s ease-in-out;
+}
+
+.btn-primary {
+  border-radius: 999px;
+}
+
+nav.navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
