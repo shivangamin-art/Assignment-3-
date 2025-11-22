@@ -1,126 +1,124 @@
 // routes/todoRoutes.js
-// Handles all CRUD routes for tasks
-
 const express = require('express');
 const router = express.Router();
 const Todo = require('../models/Todo');
 const List = require('../models/List');
+const methodOverride = require('method-override');
 
-// Helper: parse "YYYY-MM-DD" as a LOCAL date (avoid UTC shift)
-function parseLocalDate(dateString) {
-  if (!dateString) return null;
-  const [y, m, d] = dateString.split('-').map(Number);
-  // year, monthIndex (0-based), day -> local date
-  return new Date(y, m - 1, d);
-}
+router.use(methodOverride('_method'));
 
-// READ: list all tasks
+// -------------------------------
+// GET all tasks
+// -------------------------------
 router.get('/', async (req, res) => {
   try {
-    const todos = await Todo.find()
-      .populate('list')
-      .sort({ completed: 1, dueDate: 1 });
-
+    const todos = await Todo.find().populate('list').sort({ dueDate: 1 });
     res.render('todos/list', { todos });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Server Error');
+  } catch (error) {
+    console.error(error);
+    res.send('Error loading tasks');
   }
 });
 
-// CREATE: show new task form
+// -------------------------------
+// NEW task form
+// -------------------------------
 router.get('/new', async (req, res) => {
   try {
-    const lists = await List.find().sort({ name: 1 });
+    const lists = await List.find();
     res.render('todos/new', { lists });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Server Error');
+  } catch (error) {
+    console.error(error);
+    res.send('Error loading new task form');
   }
 });
 
-// CREATE: handle form submit
+// -------------------------------
+// CREATE task
+// -------------------------------
 router.post('/', async (req, res) => {
   try {
-    const { title, description, dueDate, priority, list, important } = req.body;
-
-    const parsedDueDate = parseLocalDate(dueDate);
-
-    await Todo.create({
-      title,
-      description,
-      dueDate: parsedDueDate,
-      priority,
-      important: important === 'on',
-      list: list || null
+    const todo = new Todo({
+      title: req.body.title,
+      description: req.body.description,
+      dueDate: req.body.dueDate || null,
+      priority: req.body.priority,
+      list: req.body.list && req.body.list !== '' ? req.body.list : null,
+      important: req.body.important === 'on',
+      completed: false
     });
 
+    await todo.save();
     res.redirect('/todos');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Server Error');
+  } catch (error) {
+    console.error(error);
+    res.send('Error creating task');
   }
 });
 
-// UPDATE: show edit form
+// -------------------------------
+// EDIT task form
+// -------------------------------
 router.get('/:id/edit', async (req, res) => {
   try {
     const todo = await Todo.findById(req.params.id);
-    if (!todo) return res.status(404).send('Task not found');
-
-    const lists = await List.find().sort({ name: 1 });
-
+    const lists = await List.find();
     res.render('todos/edit', { todo, lists });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Server Error');
+  } catch (error) {
+    console.error(error);
+    res.send('Error loading edit form');
   }
 });
 
-// UPDATE: handle edit form
+// -------------------------------
+// UPDATE task
+// -------------------------------
 router.put('/:id', async (req, res) => {
   try {
-    const { title, description, dueDate, priority, list, completed, important } = req.body;
-
-    const parsedDueDate = parseLocalDate(dueDate);
-
     await Todo.findByIdAndUpdate(req.params.id, {
-      title,
-      description,
-      dueDate: parsedDueDate,
-      priority,
-      completed: completed === 'on',
-      important: important === 'on',
-      list: list || null
+      title: req.body.title,
+      description: req.body.description,
+      dueDate: req.body.dueDate || null,
+      priority: req.body.priority,
+      list: req.body.list && req.body.list !== '' ? req.body.list : null,
+      important: req.body.important === 'on',
+      completed: req.body.completed === 'on'
     });
 
     res.redirect('/todos');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Server Error');
+  } catch (error) {
+    console.error(error);
+    res.send('Error updating task');
   }
 });
 
-// DELETE CONFIRM PAGE
+// -------------------------------
+// COMPLETE task (stay on same page)
+// -------------------------------
+router.put('/:id/complete', async (req, res) => {
+  try {
+    await Todo.findByIdAndUpdate(req.params.id, { completed: true });
+
+    // Stay on same page
+    res.redirect(req.get('referer'));
+  } catch (error) {
+    console.error(error);
+    res.redirect('/todos');
+  }
+});
+
+// -------------------------------
+// DELETE task (stay on same page)
+// -------------------------------
 router.get('/:id/delete', async (req, res) => {
   try {
-    const todo = await Todo.findById(req.params.id);
-    if (!todo) return res.status(404).send('Task not found');
-    res.render('todos/delete', { todo });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Server Error');
-  }
-});
-
-// DELETE: handle delete
-router.delete('/:id', async (req, res) => {
-  try {
     await Todo.findByIdAndDelete(req.params.id);
+
+    // Stay on same page
+    res.redirect(req.get('referer'));
+  } catch (error) {
+    console.error(error);
     res.redirect('/todos');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Server Error');
   }
 });
 

@@ -13,6 +13,8 @@
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body class="bg-light">
+
+  <!-- NAVBAR (same on all pages) -->
   <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container d-flex justify-content-between align-items-center">
       <a class="navbar-brand" href="/">TaskTrackr</a>
@@ -48,9 +50,9 @@
               <% lists.forEach(list => { %>
                 <a
                   href="/lists/<%= list._id %>"
-                  class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                  class="list-group-item list-group-item-action"
                 >
-                  <span><%= list.name %></span>
+                  <%= list.name %>
                 </a>
               <% }) %>
             <% } else { %>
@@ -107,7 +109,7 @@
                   <th>Priority</th>
                   <th>Status</th>
                   <th>Important</th>
-                  <th style="width: 180px;">Actions</th>
+                  <th style="width: 220px;">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -132,6 +134,15 @@
                         <% } %>
                       </td>
                       <td>
+                        <% if (!todo.completed) { %>
+                          <form
+                            action="/todos/<%= todo._id %>/complete?_method=PUT"
+                            method="POST"
+                            class="d-inline"
+                          >
+                            <button class="btn btn-sm btn-success">Complete</button>
+                          </form>
+                        <% } %>
                         <a href="/todos/<%= todo._id %>/edit" class="btn btn-sm btn-primary">Edit</a>
                         <a href="/todos/<%= todo._id %>/delete" class="btn btn-sm btn-outline-danger">Delete</a>
                       </td>

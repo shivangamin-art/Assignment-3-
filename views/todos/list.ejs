@@ -13,6 +13,8 @@
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body class="bg-light">
+
+  <!-- NAVBAR (consistent across all pages) -->
   <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container d-flex justify-content-between align-items-center">
       <a class="navbar-brand" href="/">TaskTrackr</a>
@@ -21,6 +23,7 @@
     </div>
   </nav>
 
+  <!-- MAIN CONTENT -->
   <main class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>My Tasks</h2>
@@ -36,24 +39,31 @@
           <th>Priority</th>
           <th>Status</th>
           <th>Important</th>
-          <th style="width: 180px;">Actions</th>
+          <th style="width: 220px;">Actions</th>
         </tr>
       </thead>
+
       <tbody>
         <% if (!todos || todos.length === 0) { %>
           <tr>
-            <td colspan="7" class="text-center text-muted">
-              No tasks yet. Click "Add Task" to create your first one.
+            <td colspan="7" class="text-center text-muted py-4">
+              No tasks yet. Click "Add Task" to create one.
             </td>
           </tr>
         <% } else { %>
           <% todos.forEach(todo => { %>
             <tr class="<%= todo.completed ? 'table-success' : '' %>">
+
               <td><%= todo.title %></td>
+
               <td><%= todo.list ? todo.list.name : '-' %></td>
+
               <td><%= todo.dueDate ? todo.dueDate.toDateString() : '-' %></td>
+
               <td><%= todo.priority %></td>
+
               <td><%= todo.completed ? 'Done' : 'Pending' %></td>
+
               <td>
                 <% if (todo.important) { %>
                   ⭐
@@ -61,10 +71,28 @@
                   -
                 <% } %>
               </td>
+
               <td>
-                <a href="/todos/<%= todo._id %>/edit" class="btn btn-sm btn-primary">Edit</a>
-                <a href="/todos/<%= todo._id %>/delete" class="btn btn-sm btn-outline-danger">Delete</a>
+                <!-- COMPLETE BUTTON (only if not already completed) -->
+                <% if (!todo.completed) { %>
+                  <form action="/todos/<%= todo._id %>/complete?_method=PUT" method="POST" class="d-inline">
+                    <button class="btn btn-sm btn-success">
+                      Complete
+                    </button>
+                  </form>
+                <% } %>
+
+                <!-- EDIT BUTTON -->
+                <a href="/todos/<%= todo._id %>/edit" class="btn btn-sm btn-primary">
+                  Edit
+                </a>
+
+                <!-- DELETE BUTTON -->
+                <a href="/todos/<%= todo._id %>/delete" class="btn btn-sm btn-outline-danger">
+                  Delete
+                </a>
               </td>
+
             </tr>
           <% }) %>
         <% } %>
@@ -77,5 +105,6 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
