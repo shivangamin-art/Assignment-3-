@@ -10,7 +10,7 @@
 </head>
 <body class="bg-light">
 
-  <!-- NAVBAR -->
+  <!-- navbar -->
   <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container d-flex justify-content-between align-items-center">
       <a class="navbar-brand" href="/">TaskTrackr</a>
@@ -22,7 +22,7 @@
   <main class="container-fluid">
     <div class="row">
 
-      <!-- SIDEBAR -->
+      <!-- sidebar -->
       <aside class="col-12 col-md-3 col-lg-2 mb-4 border-end bg-white">
         <div class="p-3">
           <h5 class="mb-3">Tasks</h5>
@@ -30,7 +30,16 @@
           <ul class="list-group mb-4">
             <a href="/" class="list-group-item list-group-item-action active">My Day</a>
             <a href="/important" class="list-group-item list-group-item-action">Important</a>
-            <a href="/planned" class="list-group-item list-group-item-action">Planned</a>
+            <!-- quick filters -->
+            <a href="/todos?priority=High" class="list-group-item list-group-item-action">
+              High Priority
+            </a>
+            <a href="/todos?priority=Medium" class="list-group-item list-group-item-action">
+              Medium Priority
+            </a>
+            <a href="/todos?priority=Low" class="list-group-item list-group-item-action">
+              Low Priority
+            </a>
           </ul>
 
           <h6 class="mb-2">Lists</h6>
@@ -38,6 +47,7 @@
           <div class="list-group small mb-2">
             <a href="/lists" class="list-group-item">All Lists</a>
 
+            <!-- rendering each user list -->
             <% lists.forEach(list => { %>
               <a href="/lists/<%= list._id %>" class="list-group-item">
                 <%= list.name %>
@@ -45,11 +55,12 @@
             <% }) %>
           </div>
 
+          <!-- quick action to create a new list -->
           <a href="/lists/new" class="btn btn-outline-primary btn-sm w-100">+ New List</a>
         </div>
       </aside>
 
-      <!-- MAIN CONTENT -->
+      <!-- main content date controls (previous, today, next) toggle completed tasks visibility -->
       <section class="col-12 col-md-9 col-lg-10 p-4">
 
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
@@ -60,13 +71,14 @@
           </div>
 
           <div class="d-flex gap-2 align-items-center">
-
+            <!-- day navigation -->
             <div class="btn-group">
               <a href="/?date=<%= prevDateStr %>" class="btn btn-outline-secondary">&laquo; Previous day</a>
               <a href="/?date=<%= todayDateStr %>" class="btn btn-outline-secondary">Today</a>
               <a href="/?date=<%= nextDateStr %>" class="btn btn-outline-secondary">Next day &raquo;</a>
             </div>
 
+            <!-- toogling completed tasks -->
             <a
               href="/?date=<%= currentDateStr %><%= showCompleted ? '' : '&showCompleted=true' %>"
               class="btn btn-outline-secondary"
@@ -74,6 +86,7 @@
               <%= showCompleted ? 'Hide completed' : 'Show completed' %>
             </a>
 
+            <!-- add task -->
             <a href="/todos/new" class="btn btn-success">+ Add Task</a>
           </div>
         </div>
@@ -84,6 +97,7 @@
           </div>
 
           <div class="card-body p-0">
+            <!-- tasks table: -->
             <table class="table table-hover align-middle mb-0">
               <thead>
                 <tr>
@@ -110,6 +124,7 @@
                     <td><%= todo.important ? '⭐' : '-' %></td>
 
                     <td>
+                      <!-- complete buttions for pending tasks -->
                       <% if (!todo.completed) { %>
                         <form action="/todos/<%= todo._id %>/complete?_method=PUT" class="d-inline" method="POST">
                           <button class="btn btn-sm btn-success">Complete</button>
@@ -131,6 +146,7 @@
     </div>
   </main>
 
+  <!-- footer for copyright and current year -->
   <footer class="text-center py-3 mt-4 border-top bg-white">
     <small>&copy; <%= new Date().getFullYear() %> TaskTrackr</small>
   </footer>

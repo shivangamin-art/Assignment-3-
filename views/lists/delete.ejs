@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body class="bg-light">
+
+  <!-- navbar: simple site navigation. -->
   <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container d-flex justify-content-between align-items-center">
       <a class="navbar-brand" href="/">TaskTrackr</a>
@@ -21,6 +23,7 @@
   </nav>
 
   <main class="container py-4">
+    <!-- warning confirmation deletion. -->
     <div class="alert alert-warning mt-4">
       <h4 class="alert-heading">Delete List</h4>
       <p>
@@ -31,17 +34,21 @@
         <strong>All tasks in this list will also be deleted.</strong>
       </p>
       <hr>
+      <!-- delete requests senfing using post method -->
       <form action="/lists/<%= list._id %>?_method=DELETE" method="POST" class="d-inline">
         <button type="submit" class="btn btn-danger">Yes, delete list</button>
       </form>
+      <!-- cancel button to return to overview -->
       <a href="/lists" class="btn btn-secondary ms-2">No, go back</a>
     </div>
   </main>
 
+  <!-- footer for copyright  -->
   <footer class="text-center py-3 mt-5 border-top bg-white">
     <small>&copy; <%= new Date().getFullYear() %> TaskTrackr</small>
   </footer>
 
+  <!-- bootstrap JS bundle  -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

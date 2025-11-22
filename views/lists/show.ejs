@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TaskTrackr - <%= list.name %> List</title>
 
+  <!-- bootstrap CSS and local styles -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body class="bg-light">
 
-  <!-- NAVBAR -->
+  <!-- navbar -->
   <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container d-flex justify-content-between align-items-center">
       <a class="navbar-brand" href="/">TaskTrackr</a>
@@ -20,10 +21,12 @@
   </nav>
 
   <main class="container py-4">
+    <!-- header listing title and quick actions -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>List: <%= list.name %></h2>
 
       <div class="d-flex gap-2">
+        <!-- toogle showing completed tasks for this list -->
         <a
           href="/lists/<%= list._id %><%= showCompleted ? '' : '?showCompleted=true' %>"
           class="btn btn-outline-secondary"
@@ -31,10 +34,12 @@
           <%= showCompleted ? 'Hide completed' : 'Show completed' %>
         </a>
 
+        <!-- create a new task  -->
         <a href="/todos/new" class="btn btn-success">Add Task</a>
       </div>
     </div>
 
+    <!-- tasks table for this list -->
     <table class="table table-striped table-hover align-middle">
       <thead>
         <tr>
@@ -47,6 +52,7 @@
         </tr>
       </thead>
       <tbody>
+        <!-- message when no tasks  -->
         <% if (!todos || todos.length === 0) { %>
           <tr>
             <td colspan="6" class="text-center text-muted py-4">
@@ -54,6 +60,7 @@
             </td>
           </tr>
         <% } else { %>
+      
           <% todos.forEach(todo => { %>
             <tr class="<%= todo.completed ? 'table-success' : '' %>">
               <td><%= todo.title %></td>
@@ -62,6 +69,7 @@
               <td><%= todo.completed ? 'Done' : 'Pending' %></td>
               <td><%= todo.important ? '⭐' : '-' %></td>
               <td>
+                <!-- complete button for pending tasks only -->
                 <% if (!todo.completed) { %>
                   <form
                     action="/todos/<%= todo._id %>/complete?_method=PUT"
@@ -72,6 +80,7 @@
                   </form>
                 <% } %>
 
+                <!-- edit and delete shortcuts buttons -->
                 <a href="/todos/<%= todo._id %>/edit" class="btn btn-sm btn-primary">Edit</a>
                 <a href="/todos/<%= todo._id %>/delete" class="btn btn-sm btn-outline-danger">Delete</a>
               </td>
@@ -82,10 +91,12 @@
     </table>
   </main>
 
+  <!-- footer for copyright line -->
   <footer class="text-center py-3 mt-5 border-top bg-white">
     <small>&copy; <%= new Date().getFullYear() %> TaskTrackr</small>
   </footer>
 
+  <!-- bootstrap JS bundle  -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

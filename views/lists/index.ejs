@@ -1,3 +1,7 @@
+<!--
+  lists/index.ejs
+  displaying users with simple actions: open or delete.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +14,7 @@
 </head>
 <body class="bg-light">
 
-  <!-- NAVBAR -->
+  <!-- navbar:  -->
   <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container d-flex justify-content-between align-items-center">
       <a class="navbar-brand" href="/">TaskTrackr</a>
@@ -20,11 +24,13 @@
   </nav>
 
   <main class="container py-4">
+    <!-- creating page title and action for new list  -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>My Lists</h2>
       <a href="/lists/new" class="btn btn-success">New List</a>
     </div>
 
+    <!-- showing name, date creation and actions -->
     <table class="table table-striped table-hover align-middle">
       <thead>
         <tr>
@@ -34,6 +40,7 @@
         </tr>
       </thead>
       <tbody>
+        <!-- messgae for no available list -->
         <% if (!lists || lists.length === 0) { %>
           <tr>
             <td colspan="3" class="text-center text-muted py-4">
@@ -41,12 +48,15 @@
             </td>
           </tr>
         <% } else { %>
+          <!-- listing row with open and delete actions -->
           <% lists.forEach(list => { %>
             <tr>
               <td><%= list.name %></td>
               <td><%= list.createdAt ? list.createdAt.toDateString() : '-' %></td>
               <td>
+                <!-- list for viewing tasks -->
                 <a href="/lists/<%= list._id %>" class="btn btn-sm btn-primary">Open</a>
+                <!-- confirmation page navigation for delete -->
                 <a href="/lists/<%= list._id %>/delete" class="btn btn-sm btn-outline-danger">Delete</a>
               </td>
             </tr>
@@ -56,10 +66,12 @@
     </table>
   </main>
 
+  <!-- footer for copyright -->
   <footer class="text-center py-3 mt-5 border-top bg-white">
     <small>&copy; <%= new Date().getFullYear() %> TaskTrackr</small>
   </footer>
 
+  <!-- bootstrap JS bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
