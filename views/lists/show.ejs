@@ -3,15 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TaskTrackr - <%= list.name %></title>
+  <title>TaskTrackr - <%= list.name %> List</title>
 
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  >
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body class="bg-light">
+
+  <!-- NAVBAR -->
   <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container d-flex justify-content-between align-items-center">
       <a class="navbar-brand" href="/">TaskTrackr</a>
@@ -21,18 +20,20 @@
   </nav>
 
   <main class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2><%= list.name %></h2>
-      <a href="/lists" class="btn btn-outline-secondary">Back to Lists</a>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>List: <%= list.name %></h2>
+
+      <div class="d-flex gap-2">
+        <a
+          href="/lists/<%= list._id %><%= showCompleted ? '' : '?showCompleted=true' %>"
+          class="btn btn-outline-secondary"
+        >
+          <%= showCompleted ? 'Hide completed' : 'Show completed' %>
+        </a>
+
+        <a href="/todos/new" class="btn btn-success">Add Task</a>
+      </div>
     </div>
-
-    <p class="text-muted">
-      Created: <%= list.createdAt ? list.createdAt.toDateString() : '-' %>
-    </p>
-
-    <hr>
-
-    <h4 class="mb-3">Tasks in this list</h4>
 
     <table class="table table-striped table-hover align-middle">
       <thead>
@@ -41,13 +42,14 @@
           <th>Due Date</th>
           <th>Priority</th>
           <th>Status</th>
-          <th style="width: 180px;">Actions</th>
+          <th>Important</th>
+          <th style="width: 220px;">Actions</th>
         </tr>
       </thead>
       <tbody>
         <% if (!todos || todos.length === 0) { %>
           <tr>
-            <td colspan="5" class="text-center text-muted">
+            <td colspan="6" class="text-center text-muted py-4">
               No tasks in this list yet.
             </td>
           </tr>
@@ -58,7 +60,18 @@
               <td><%= todo.dueDate ? todo.dueDate.toDateString() : '-' %></td>
               <td><%= todo.priority %></td>
               <td><%= todo.completed ? 'Done' : 'Pending' %></td>
+              <td><%= todo.important ? '⭐' : '-' %></td>
               <td>
+                <% if (!todo.completed) { %>
+                  <form
+                    action="/todos/<%= todo._id %>/complete?_method=PUT"
+                    method="POST"
+                    class="d-inline"
+                  >
+                    <button class="btn btn-sm btn-success">Complete</button>
+                  </form>
+                <% } %>
+
                 <a href="/todos/<%= todo._id %>/edit" class="btn btn-sm btn-primary">Edit</a>
                 <a href="/todos/<%= todo._id %>/delete" class="btn btn-sm btn-outline-danger">Delete</a>
               </td>
