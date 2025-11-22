@@ -6,6 +6,14 @@ const router = express.Router();
 const Todo = require('../models/Todo');
 const List = require('../models/List');
 
+// Helper: parse "YYYY-MM-DD" as a LOCAL date (avoid UTC shift)
+function parseLocalDate(dateString) {
+  if (!dateString) return null;
+  const [y, m, d] = dateString.split('-').map(Number);
+  // year, monthIndex (0-based), day -> local date
+  return new Date(y, m - 1, d);
+}
+
 // READ: list all tasks
 router.get('/', async (req, res) => {
   try {
@@ -36,10 +44,12 @@ router.post('/', async (req, res) => {
   try {
     const { title, description, dueDate, priority, list, important } = req.body;
 
+    const parsedDueDate = parseLocalDate(dueDate);
+
     await Todo.create({
       title,
       description,
-      dueDate,
+      dueDate: parsedDueDate,
       priority,
       important: important === 'on',
       list: list || null
@@ -72,10 +82,12 @@ router.put('/:id', async (req, res) => {
   try {
     const { title, description, dueDate, priority, list, completed, important } = req.body;
 
+    const parsedDueDate = parseLocalDate(dueDate);
+
     await Todo.findByIdAndUpdate(req.params.id, {
       title,
       description,
-      dueDate,
+      dueDate: parsedDueDate,
       priority,
       completed: completed === 'on',
       important: important === 'on',

@@ -1,18 +1,16 @@
 // app.js
 // Main entry point for TaskTrackr
 
-const express = require('express');
-const path = require('path');
-const methodOverride = require('method-override');
-const connectDB = require('./config/db');
-require('dotenv').config();
+const express = require("express");
+const path = require("path");
+const methodOverride = require("method-override");
+const connectDB = require("./config/db");
+require("dotenv").config();
 
-const todoRoutes = require('./routes/todoRoutes');
-const listRoutes = require('./routes/listRoutes');
-
-// bring in models so home page and views can query tasks/lists
-const Todo = require('./models/Todo');
-const List = require('./models/List');
+const todoRoutes = require("./routes/todoRoutes");
+const listRoutes = require("./routes/listRoutes");
+const Todo = require("./models/Todo");
+const List = require("./models/List");
 
 const app = express();
 
@@ -20,134 +18,151 @@ const app = express();
 connectDB();
 
 // View engine & static files
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-app.use(express.static(path.join(__dirname, 'public')));
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+app.use(express.static(path.join(__dirname, "public")));
 
 // Middleware to parse form data & JSON
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Allow PUT and DELETE from forms
-app.use(methodOverride('_method'));
+// Allow PUT/DELETE from forms
+app.use(methodOverride("_method"));
 
-// Helper to format date as YYYY-MM-DD
+// ================================
+// Helper: Format date as YYYY-MM-DD
+// ================================
 function formatDate(d) {
-  return d.toISOString().substring(0, 10);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
-// ===================== HOME = MY DAY ===================== //
-app.get('/', async (req, res) => {
+// ================================
+// HOME PAGE — MY DAY
+// ================================
+app.get("/", async (req, res) => {
   try {
-    // If user passes ?date=YYYY-MM-DD use that, otherwise today
-    const dateParam = req.query.date;
-    let currentDate = dateParam ? new Date(dateParam) : new Date();
+    // Real local "today"
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    // Normalize to start of day
-    const startOfDay = new Date(currentDate);
-    startOfDay.setHours(0, 0, 0, 0);
+    // Selected date from query OR today
+    let currentDate;
+    if (req.query.date) {
+      const [y, m, d] = req.query.date.split("-").map(Number);
+      currentDate = new Date(y, m - 1, d);
+    } else {
+      currentDate = today;
+    }
 
-    const endOfDay = new Date(currentDate);
-    endOfDay.setHours(23, 59, 59, 999);
+    const currentDateStr = formatDate(currentDate);
 
-    // Tasks due on this day
-    const todosToday = await Todo.find({
-      dueDate: { $gte: startOfDay, $lte: endOfDay }
-    })
-      .populate('list')
-      .sort({ completed: 1, priority: -1 });
+    // Get all todos (avoid timezone issues)
+    let todos = await Todo.find().populate("list");
+
+    // Filter by formatted date string
+    const todosToday = todos
+      .filter((todo) => {
+        if (!todo.dueDate) return false;
+        return formatDate(todo.dueDate) === currentDateStr;
+      })
+      .sort((a, b) => {
+        const priorityOrder = { High: 3, Medium: 2, Low: 1 };
+        if (a.completed !== b.completed) {
+          return a.completed - b.completed; // incomplete first
+        }
+        return (
+          (priorityOrder[b.priority] || 0) -
+          (priorityOrder[a.priority] || 0)
+        );
+      });
 
     // All lists for sidebar
     const lists = await List.find().sort({ name: 1 });
 
-    // Dates for navigation
-    const dayOnly = new Date(startOfDay);
-    const prev = new Date(dayOnly);
+    // Navigation dates
+    const prev = new Date(currentDate);
     prev.setDate(prev.getDate() - 1);
 
-    const next = new Date(dayOnly);
+    const next = new Date(currentDate);
     next.setDate(next.getDate() + 1);
 
-    const currentDateStr = formatDate(dayOnly);
-    const prevDateStr = formatDate(prev);
-    const nextDateStr = formatDate(next);
-
-    res.render('index', {
+    res.render("index", {
       todosToday,
+      lists,
       currentDate,
       currentDateStr,
-      prevDateStr,
-      nextDateStr,
-      lists
+      prevDateStr: formatDate(prev),
+      nextDateStr: formatDate(next),
+      todayDateStr: formatDate(today),
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 });
 
-// ===================== IMPORTANT VIEW ===================== //
-// Shows all tasks marked as important
-app.get('/important', async (req, res) => {
+// ================================
+// IMPORTANT TASKS PAGE
+// ================================
+app.get("/important", async (req, res) => {
   try {
     const importantTodos = await Todo.find({ important: true })
-      .populate('list')
+      .populate("list")
       .sort({ completed: 1, dueDate: 1 });
 
     const lists = await List.find().sort({ name: 1 });
 
-    res.render('important', {
-      importantTodos,
-      lists
-    });
+    res.render("important", { importantTodos, lists });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 });
 
-// ===================== PLANNED VIEW (WEEK) ===================== //
-// Shows tasks planned for the next 7 days
-app.get('/planned', async (req, res) => {
+// ================================
+// PLANNED TASKS (NEXT 7 DAYS)
+// ================================
+app.get("/planned", async (req, res) => {
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const endOfRange = new Date(today);
-    endOfRange.setDate(endOfRange.getDate() + 7);
-    endOfRange.setHours(23, 59, 59, 999);
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    end.setHours(23, 59, 59, 999);
 
     const plannedTodos = await Todo.find({
-      dueDate: { $gte: today, $lte: endOfRange }
+      dueDate: { $gte: start, $lte: end },
     })
-      .populate('list')
-      .sort({ dueDate: 1, completed: 1 });
+      .populate("list")
+      .sort({ dueDate: 1 });
 
     const lists = await List.find().sort({ name: 1 });
 
-    res.render('planned', {
-      plannedTodos,
-      today,
-      endOfRange,
-      lists
-    });
+    res.render("planned", { plannedTodos, lists, today: start, endOfRange: end });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 });
 
-// Routes for todos and lists
-app.use('/todos', todoRoutes);
-app.use('/lists', listRoutes);
+// ================================
+// ROUTES
+// ================================
+app.use("/todos", todoRoutes);
+app.use("/lists", listRoutes);
 
-// 404 fallback
+// ================================
+// 404 HANDLER
+// ================================
 app.use((req, res) => {
-  res.status(404).send('Page not found');
+  res.status(404).send("Page Not Found");
 });
 
-// Start server
+// ================================
+// START SERVER
+// ================================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

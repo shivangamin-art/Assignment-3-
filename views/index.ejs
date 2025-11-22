@@ -14,7 +14,7 @@
 </head>
 <body class="bg-light">
   <nav class="navbar navbar-dark bg-dark mb-4">
-    <div class="container">
+    <div class="container d-flex justify-content-between align-items-center">
       <a class="navbar-brand" href="/">TaskTrackr</a>
       <a class="nav-link text-light" href="/todos">All Tasks</a>
       <a class="nav-link text-light" href="/lists">Lists</a>
@@ -26,7 +26,7 @@
       <!-- LEFT SIDEBAR -->
       <aside class="col-12 col-md-3 col-lg-2 mb-4 border-end bg-white">
         <div class="p-3">
-          <h5 class="mb-3">Views</h5>
+          <h5 class="mb-3">Tasks</h5>
           <ul class="list-group mb-4">
             <a href="/" class="list-group-item list-group-item-action active">
               My Day
@@ -68,6 +68,7 @@
 
       <!-- MAIN CONTENT: MY DAY -->
       <section class="col-12 col-md-9 col-lg-10 p-4">
+        <!-- Header + Date navigation -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
           <div>
             <h2 class="mb-1">My Day</h2>
@@ -76,26 +77,26 @@
             </p>
           </div>
 
-          <div class="btn-group mt-2 mt-md-0" role="group">
-            <a href="/?date=<%= prevDateStr %>" class="btn btn-outline-secondary">
-              &laquo; Previous day
-            </a>
-            <a href="/?date=<%= currentDateStr %>" class="btn btn-outline-secondary">
-              Today
-            </a>
-            <a href="/?date=<%= nextDateStr %>" class="btn btn-outline-secondary">
-              Next day &raquo;
-            </a>
+          <div class="d-flex flex-wrap align-items-center gap-2 mt-2 mt-md-0">
+            <div class="btn-group" role="group">
+              <a href="/?date=<%= prevDateStr %>" class="btn btn-outline-secondary">
+                &laquo; Previous day
+              </a>
+              <a href="/?date=<%= todayDateStr %>" class="btn btn-outline-secondary">
+                Today
+              </a>
+              <a href="/?date=<%= nextDateStr %>" class="btn btn-outline-secondary">
+                Next day &raquo;
+              </a>
+            </div>
+            <a href="/todos/new" class="btn btn-success ms-md-3">+ Add Task</a>
           </div>
         </div>
 
-        <div class="mb-3">
-          <a href="/todos/new" class="btn btn-success">+ Add Task</a>
-        </div>
-
-        <div class="card">
+        <!-- Tasks card directly under My Day -->
+        <div class="card mt-2">
           <div class="card-header">
-            Tasks due on <strong><%= currentDate.toDateString() %></strong>
+            Tasks to work on by <strong><%= currentDate.toDateString() %></strong>
           </div>
           <div class="card-body p-0">
             <table class="table mb-0 table-hover align-middle">
