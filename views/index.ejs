@@ -10,19 +10,36 @@
 </head>
 <body class="bg-light">
 
-  <!-- navbar -->
+  <!-- NAVBAR -->
   <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container d-flex justify-content-between align-items-center">
-      <a class="navbar-brand" href="/">TaskTrackr</a>
-      <a class="nav-link text-light" href="/todos">All Tasks</a>
-      <a class="nav-link text-light" href="/lists">Lists</a>
+
+      <!-- Left: brand + links -->
+      <div class="d-flex align-items-center gap-4">
+        <a class="navbar-brand" href="/">TaskTrackr</a>
+        <a class="nav-link text-light" href="/todos">All Tasks</a>
+        <a class="nav-link text-light" href="/lists">Lists</a>
+      </div>
+
+      <!-- Right: auth -->
+      <div>
+        <% if (user) { %>
+          <span class="navbar-text text-light me-3">
+            Hello, <%= user.displayName %>
+          </span>
+          <a class="btn btn-outline-light btn-sm" href="/auth/logout">Logout</a>
+        <% } else { %>
+          <a class="btn btn-outline-light btn-sm me-2" href="/auth/google">Login with Google</a>
+          <a class="btn btn-outline-light btn-sm" href="/auth/github">Login with GitHub</a>
+        <% } %>
+      </div>
     </div>
   </nav>
 
   <main class="container-fluid">
     <div class="row">
 
-      <!-- sidebar -->
+      <!-- SIDEBAR -->
       <aside class="col-12 col-md-3 col-lg-2 mb-4 border-end bg-white">
         <div class="p-3">
           <h5 class="mb-3">Tasks</h5>
@@ -30,24 +47,15 @@
           <ul class="list-group mb-4">
             <a href="/" class="list-group-item list-group-item-action active">My Day</a>
             <a href="/important" class="list-group-item list-group-item-action">Important</a>
-            <!-- quick filters -->
-            <a href="/todos?priority=High" class="list-group-item list-group-item-action">
-              High Priority
-            </a>
-            <a href="/todos?priority=Medium" class="list-group-item list-group-item-action">
-              Medium Priority
-            </a>
-            <a href="/todos?priority=Low" class="list-group-item list-group-item-action">
-              Low Priority
-            </a>
+            <a href="/todos?priority=High" class="list-group-item list-group-item-action">High Priority</a>
+            <a href="/todos?priority=Medium" class="list-group-item list-group-item-action">Medium Priority</a>
+            <a href="/todos?priority=Low" class="list-group-item list-group-item-action">Low Priority</a>
           </ul>
 
           <h6 class="mb-2">Lists</h6>
-
           <div class="list-group small mb-2">
             <a href="/lists" class="list-group-item">All Lists</a>
 
-            <!-- rendering each user list -->
             <% lists.forEach(list => { %>
               <a href="/lists/<%= list._id %>" class="list-group-item">
                 <%= list.name %>
@@ -55,30 +63,31 @@
             <% }) %>
           </div>
 
-          <!-- quick action to create a new list -->
-          <a href="/lists/new" class="btn btn-outline-primary btn-sm w-100">+ New List</a>
+          <% if (user) { %>
+            <a href="/lists/new" class="btn btn-outline-primary btn-sm w-100">+ New List</a>
+          <% } else { %>
+            <a href="/auth/google" class="btn btn-outline-primary btn-sm w-100">Login to create lists</a>
+          <% } %>
         </div>
       </aside>
 
-      <!-- main content date controls (previous, today, next) toggle completed tasks visibility -->
+      <!-- MAIN CONTENT -->
       <section class="col-12 col-md-9 col-lg-10 p-4">
 
+        <!-- Header and controls -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-
           <div>
             <h2 class="mb-1">My Day</h2>
-            <p class="text-muted"><%= currentDate.toDateString() %></p>
+            <p class="text-muted mb-0"><%= currentDate.toDateString() %></p>
           </div>
 
-          <div class="d-flex gap-2 align-items-center">
-            <!-- day navigation -->
+          <div class="d-flex gap-2 align-items-center flex-wrap">
             <div class="btn-group">
               <a href="/?date=<%= prevDateStr %>" class="btn btn-outline-secondary">&laquo; Previous day</a>
               <a href="/?date=<%= todayDateStr %>" class="btn btn-outline-secondary">Today</a>
               <a href="/?date=<%= nextDateStr %>" class="btn btn-outline-secondary">Next day &raquo;</a>
             </div>
 
-            <!-- toogling completed tasks -->
             <a
               href="/?date=<%= currentDateStr %><%= showCompleted ? '' : '&showCompleted=true' %>"
               class="btn btn-outline-secondary"
@@ -86,18 +95,21 @@
               <%= showCompleted ? 'Hide completed' : 'Show completed' %>
             </a>
 
-            <!-- add task -->
-            <a href="/todos/new" class="btn btn-success">+ Add Task</a>
+            <% if (user) { %>
+              <a href="/todos/new" class="btn btn-success">+ Add Task</a>
+            <% } else { %>
+              <a href="/auth/google" class="btn btn-outline-success">Login to add tasks</a>
+            <% } %>
           </div>
         </div>
 
+        <!-- TASK TABLE CARD -->
         <div class="card">
           <div class="card-header">
             Tasks to work on by <strong><%= currentDate.toDateString() %></strong>
           </div>
 
           <div class="card-body p-0">
-            <!-- tasks table: -->
             <table class="table table-hover align-middle mb-0">
               <thead>
                 <tr>
@@ -112,7 +124,11 @@
 
               <tbody>
                 <% if (todosToday.length === 0) { %>
-                  <tr><td colspan="6" class="text-center text-muted py-4">No tasks due on this day.</td></tr>
+                  <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                      No tasks due on this day.
+                    </td>
+                  </tr>
                 <% } %>
 
                 <% todosToday.forEach(todo => { %>
@@ -124,15 +140,20 @@
                     <td><%= todo.important ? '⭐' : '-' %></td>
 
                     <td>
-                      <!-- complete buttions for pending tasks -->
-                      <% if (!todo.completed) { %>
-                        <form action="/todos/<%= todo._id %>/complete?_method=PUT" class="d-inline" method="POST">
-                          <button class="btn btn-sm btn-success">Complete</button>
-                        </form>
-                      <% } %>
+                      <% if (user) { %>
+                        <% if (!todo.completed) { %>
+                          <form action="/todos/<%= todo._id %>/complete?_method=PUT"
+                                method="POST"
+                                class="d-inline">
+                            <button class="btn btn-sm btn-success">Complete</button>
+                          </form>
+                        <% } %>
 
-                      <a href="/todos/<%= todo._id %>/edit" class="btn btn-sm btn-primary">Edit</a>
-                      <a href="/todos/<%= todo._id %>/delete" class="btn btn-sm btn-outline-danger">Delete</a>
+                        <a href="/todos/<%= todo._id %>/edit" class="btn btn-sm btn-primary">Edit</a>
+                        <a href="/todos/<%= todo._id %>/delete" class="btn btn-sm btn-outline-danger">Delete</a>
+                      <% } else { %>
+                        <span class="text-muted small">Login to modify</span>
+                      <% } %>
                     </td>
                   </tr>
                 <% }) %>
@@ -146,7 +167,6 @@
     </div>
   </main>
 
-  <!-- footer for copyright and current year -->
   <footer class="text-center py-3 mt-4 border-top bg-white">
     <small>&copy; <%= new Date().getFullYear() %> TaskTrackr</small>
   </footer>

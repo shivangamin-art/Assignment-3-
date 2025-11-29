@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const Todo = require('../models/Todo');
 const List = require('../models/List');
+const { ensureAuth } = require('../middleware/auth');
+
 
 // getting all tasks 
 

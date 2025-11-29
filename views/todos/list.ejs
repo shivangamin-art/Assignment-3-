@@ -1,49 +1,75 @@
 <!--
   todos/list.ejs
-  display the user's tasks in a table with quick actions: complete, edit, delete.
+  Display all tasks with filtering and modification actions.
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TaskTrackr - My Tasks</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskTrackr - All Tasks</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/styles.css">
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body class="bg-light">
 
-  <!-- navbar -->
+  <!-- NAVBAR (consistent on all pages) -->
   <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container d-flex justify-content-between align-items-center">
-      <a class="navbar-brand" href="/">TaskTrackr</a>
-      <a class="nav-link text-light" href="/todos">All Tasks</a>
-      <a class="nav-link text-light" href="/lists">Lists</a>
+
+      <!-- Left side nav items -->
+      <div class="d-flex align-items-center gap-4">
+        <a class="navbar-brand" href="/">TaskTrackr</a>
+        <a class="nav-link text-light" href="/todos">All Tasks</a>
+        <a class="nav-link text-light" href="/lists">Lists</a>
+      </div>
+
+      <!-- Right side: Login / Logout -->
+      <div>
+        <% if (user) { %>
+          <span class="navbar-text text-light me-3">
+            Hello, <%= user.displayName %>
+          </span>
+          <a class="btn btn-outline-light btn-sm" href="/auth/logout">Logout</a>
+        <% } else { %>
+          <a class="btn btn-outline-light btn-sm me-2" href="/auth/google">Login with Google</a>
+          <a class="btn btn-outline-light btn-sm" href="/auth/github">Login with GitHub</a>
+        <% } %>
+      </div>
     </div>
   </nav>
 
   <main class="container py-4">
 
-    <!-- header for page title and action buttons -->
+    <!-- PAGE HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>My Tasks</h2>
 
       <div class="d-flex gap-2">
-        <!-- buttion for hide complete/show complet tasks -->
-        <a
+
+        <!-- Show/Hide Completed -->
+        <a 
           href="<%= showCompleted ? '/todos' : '/todos?showCompleted=true' %>"
           class="btn btn-outline-secondary"
         >
           <%= showCompleted ? 'Hide completed' : 'Show completed' %>
         </a>
 
-        <!--  create a new task -->
-        <a href="/todos/new" class="btn btn-success">Add Task</a>
+        <!-- Add Task button -->
+        <% if (user) { %>
+          <a href="/todos/new" class="btn btn-success">Add Task</a>
+        <% } else { %>
+          <a href="/auth/google" class="btn btn-outline-success">Login to add tasks</a>
+        <% } %>
+
       </div>
     </div>
 
-    <!-- tasks table -->
+    <!-- TASK TABLE -->
     <table class="table table-striped table-hover align-middle">
       <thead>
         <tr>
@@ -57,15 +83,18 @@
         </tr>
       </thead>
       <tbody>
-        <!-- empty task message -->
+
+        <!-- EMPTY TASK MESSAGE -->
         <% if (todos.length === 0) { %>
-          <tr><td colspan="7" class="text-center text-muted py-4">No tasks</td></tr>
+          <tr>
+            <td colspan="7" class="text-center text-muted py-4">No tasks</td>
+          </tr>
         <% } %>
 
-        <!-- rendering to each task row -->
+        <!-- RENDER EACH TASK -->
         <% todos.forEach(todo => { %>
           <tr class="<%= todo.completed ? 'table-success' : '' %>">
-            <!-- Title and basic details -->
+
             <td><%= todo.title %></td>
             <td><%= todo.list ? todo.list.name : '-' %></td>
             <td><%= todo.dueDate ? todo.dueDate.toDateString() : '-' %></td>
@@ -73,25 +102,36 @@
             <td><%= todo.completed ? 'Done' : 'Pending' %></td>
             <td><%= todo.important ? '⭐' : '-' %></td>
 
-            <!-- Action buttons: complete, edit, delete -->
+            <!-- ACTION BUTTONS -->
             <td>
-              <% if (!todo.completed) { %>
-                <form action="/todos/<%= todo._id %>/complete?_method=PUT" method="POST" class="d-inline">
-                  <button class="btn btn-sm btn-success">Complete</button>
-                </form>
-              <% } %>
+              <% if (user) { %>
 
-              <a href="/todos/<%= todo._id %>/edit" class="btn btn-sm btn-primary">Edit</a>
-              <a href="/todos/<%= todo._id %>/delete" class="btn btn-sm btn-outline-danger">Delete</a>
+                <% if (!todo.completed) { %>
+                  <!-- COMPLETE button -->
+                  <form action="/todos/<%= todo._id %>/complete?_method=PUT" method="POST" class="d-inline">
+                    <button class="btn btn-sm btn-success">Complete</button>
+                  </form>
+                <% } %>
+
+                <!-- EDIT -->
+                <a href="/todos/<%= todo._id %>/edit" class="btn btn-sm btn-primary">Edit</a>
+
+                <!-- DELETE -->
+                <a href="/todos/<%= todo._id %>/delete" class="btn btn-sm btn-outline-danger">Delete</a>
+
+              <% } else { %>
+                <span class="text-muted small">Login to modify</span>
+              <% } %>
             </td>
+
           </tr>
         <% }) %>
+
       </tbody>
     </table>
-
   </main>
 
-  <!-- footer for copyright note -->
+  <!-- FOOTER -->
   <footer class="text-center py-3 mt-5 border-top bg-white">
     <small>&copy; <%= new Date().getFullYear() %> TaskTrackr</small>
   </footer>
